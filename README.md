@@ -25,6 +25,8 @@ public/
   privacy.html  privacyverklaring
   page.css      stijl voor help en privacy
   404.html      foutpagina
+  robots.txt, sitemap.xml
+  images/       logo, favicon, social-preview (og.png)
   _headers      beveiligingsheaders (CSP e.d.)
 wrangler.jsonc  Cloudflare-configuratie (statische assets)
 .github/ISSUE_TEMPLATE/  formulieren voor fouten, wensen en termmeldingen
@@ -40,13 +42,13 @@ Gebruikte queries:
 
 ## Lokaal draaien
 
-Elke statische webserver werkt, bijvoorbeeld:
+Met wrangler, zodat nette URL's (`/help`), de 404-pagina en `_headers` net zo werken als online:
 
 ```bash
-python -m http.server 8080 --directory public
+npx wrangler dev
 ```
 
-Open daarna http://localhost:8080.
+Open daarna http://localhost:8787.
 
 ## Publiceren
 
