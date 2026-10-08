@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://termenplukker.jolietjakeblues64.workers.dev/sitemap.xml
