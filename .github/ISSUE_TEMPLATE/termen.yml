@@ -1,0 +1,40 @@
+name: Fout in een term of koppeling
+description: Een term hoort er niet bij, mist, of een exactMatch-koppeling klopt niet.
+title: "[term] "
+labels: ["termen"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ligt de fout in de thesaurus zelf (een verkeerd label of een verkeerde hiërarchie), meld dat dan bij de beheerder van die bron: de RCE voor de CHT, het Getty Research Institute voor de AAT. Hier gaat het om hoe de Termenplukker termen rangschikt of koppelt.
+  - type: input
+    id: zoekterm
+    attributes:
+      label: Zoekterm
+    validations:
+      required: true
+  - type: textarea
+    id: termen
+    attributes:
+      label: Term(en) en URI('s)
+      placeholder: |
+        klederdrachten — https://data.cultureelerfgoed.nl/term/id/cht/6312a407-…
+        streekdracht — http://vocab.getty.edu/aat/300380192
+    validations:
+      required: true
+  - type: dropdown
+    id: soort
+    attributes:
+      label: Wat klopt er niet?
+      options:
+        - Term staat aan maar hoort er niet bij
+        - Term staat onder "minder zeker" maar hoort er wel bij
+        - Voorgestelde exactMatch klopt niet
+        - Een exactMatch ontbreekt
+        - Iets anders
+    validations:
+      required: true
+  - type: textarea
+    id: toelichting
+    attributes:
+      label: Toelichting

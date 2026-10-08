@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Termenplukker</title>
+<meta name="description" content="Stel een skos:Collection samen uit termen in het Termennetwerk.">
+<style>
+:root {
+  --bg: #f6f4ef; --panel: #ffffff; --ink: #1d1f22; --muted: #646a72; --line: #e2ded4;
+  --accent: #154273; --accent-ink: #ffffff; --soft: #eef2f7; --warn: #8a4b00; --warn-bg: #fff4e0;
+  --cht: #2f6b3a; --cht-bg: #e5f1e6; --aat: #1f4f8a; --aat-bg: #e3ecf7; --oth: #6b3f87; --oth-bg: #f0e7f6;
+  --match: #8a5a00; --match-bg: #fbf0d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181b; --panel: #1f2226; --ink: #e8e6e1; --muted: #9aa0a8; --line: #33373d;
+    --accent: #7fb0ea; --accent-ink: #0d1520; --soft: #252a31; --warn: #ffc56b; --warn-bg: #3a2c12;
+    --cht: #8fd19b; --cht-bg: #1f3324; --aat: #93bdf0; --aat-bg: #1c2b40; --oth: #cfa6ea; --oth-bg: #2f2238;
+    --match: #f0c56a; --match-bg: #3a2f14;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181b; --panel: #1f2226; --ink: #e8e6e1; --muted: #9aa0a8; --line: #33373d;
+  --accent: #7fb0ea; --accent-ink: #0d1520; --soft: #252a31; --warn: #ffc56b; --warn-bg: #3a2c12;
+  --cht: #8fd19b; --cht-bg: #1f3324; --aat: #93bdf0; --aat-bg: #1c2b40; --oth: #cfa6ea; --oth-bg: #2f2238;
+  --match: #f0c56a; --match-bg: #3a2f14;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+header { padding: 20px 16px 8px; max-width: 1400px; margin: 0 auto; }
+header h1 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
+header p { margin: 2px 0 0; color: var(--muted); }
+main { max-width: 1400px; margin: 0 auto; padding: 8px 16px 40px; display: grid; gap: 16px; grid-template-columns: 320px minmax(0,1fr) 360px; align-items: start; }
+@media (max-width: 1150px) { main { grid-template-columns: 300px minmax(0,1fr); } #export { grid-column: 1 / -1; } }
+@media (max-width: 760px) { main { grid-template-columns: minmax(0,1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.sticky { position: sticky; top: 12px; }
+@media (max-width: 760px) { .sticky { position: static; } }
+h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 10px; }
+label.f { display: block; font-weight: 600; margin: 12px 0 4px; }
+label.f:first-of-type { margin-top: 0; }
+input[type=text], input[type=number] { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); font: inherit; }
+input:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hint { color: var(--muted); font-size: 13.5px; margin: 4px 0 0; }
+button { font: inherit; cursor: pointer; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 6px 12px; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; padding: 9px 16px; }
+button:disabled { opacity: .5; cursor: default; }
+button.link { border: 0; background: none; color: var(--accent); padding: 0 2px; font-size: 13.5px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; background: var(--soft); border: 1px solid var(--line); border-radius: 999px; padding: 2px 4px 2px 10px; font-size: 14px; }
+.chip button { border: 0; background: none; padding: 0 6px; color: var(--muted); font-size: 16px; line-height: 1; }
+.row { display: flex; gap: 8px; align-items: center; }
+.sources { max-height: 220px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-size: 14px; }
+.sources label { display: flex; gap: 6px; align-items: flex-start; padding: 2px 0; }
+.status { margin-top: 12px; font-size: 14px; color: var(--muted); min-height: 1.4em; }
+.warn { background: var(--warn-bg); color: var(--warn); border-radius: 6px; padding: 6px 10px; font-size: 14px; margin-top: 8px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+.toolbar input { max-width: 260px; }
+.counter { margin-left: auto; color: var(--muted); font-size: 14px; }
+.group { margin-bottom: 18px; }
+.group > h3 { display: flex; align-items: baseline; gap: 10px; margin: 0 0 6px; font-size: 19px; }
+.group > h3 small { color: var(--muted); font-weight: 400; font-size: 14px; }
+ul.tree { list-style: none; margin: 0; padding: 0; }
+ul.tree ul.tree { margin-left: 22px; border-left: 1px dashed var(--line); padding-left: 8px; }
+.term { display: flex; gap: 8px; align-items: flex-start; padding: 5px 6px; border-radius: 6px; }
+.term:hover { background: var(--soft); }
+.term input { margin-top: 4px; }
+.term .body { flex: 1; min-width: 0; }
+.term .lbl { font-weight: 600; cursor: pointer; }
+.term.off .lbl { color: var(--muted); font-weight: 400; }
+.alt { color: var(--muted); font-size: 13.5px; }
+.badge { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 0 6px; border-radius: 4px; margin-left: 6px; vertical-align: 2px; letter-spacing: .02em; }
+.b-cht { background: var(--cht-bg); color: var(--cht); } .b-aat { background: var(--aat-bg); color: var(--aat); } .b-oth { background: var(--oth-bg); color: var(--oth); }
+.acts { display: inline-flex; gap: 6px; margin-left: 8px; }
+.match { display: inline-flex; align-items: center; gap: 4px; background: var(--match-bg); color: var(--match); border-radius: 4px; padding: 0 6px; font-size: 12.5px; margin: 2px 6px 0 0; }
+.match.rej { opacity: .55; text-decoration: line-through; }
+.match button { border: 0; background: none; color: inherit; padding: 0 2px; font-size: 12.5px; }
+.detail { font-size: 14px; color: var(--muted); margin-top: 4px; border-left: 3px solid var(--line); padding-left: 8px; }
+.detail a { color: var(--accent); word-break: break-all; }
+details.weak { margin-top: 6px; }
+details.weak summary { cursor: pointer; color: var(--muted); font-size: 14px; padding: 4px 6px; }
+.empty { color: var(--muted); padding: 30px 10px; text-align: center; }
+.empty strong { color: var(--ink); }
+pre { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px; font: 12px/1.4 ui-monospace, Consolas, monospace; max-height: 340px; overflow: auto; white-space: pre; }
+.stat { display: flex; justify-content: space-between; font-size: 14.5px; padding: 2px 0; }
+.uri { font: 12.5px ui-monospace, Consolas, monospace; word-break: break-all; color: var(--muted); margin-top: 4px; }
+.how { font-size: 14px; color: var(--muted); }
+.how ol { padding-left: 18px; margin: 6px 0; }
+.spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: s 0.8s linear infinite; vertical-align: -1px; margin-right: 6px; }
+.nav { margin-top: 6px; font-size: 14.5px; } .nav a, footer a { color: var(--accent); }
+footer { max-width: 1400px; margin: 0 auto; padding: 0 16px 30px; color: var(--muted); font-size: 13.5px; }
+@keyframes s { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Termenplukker</h1>
+  <p>Zoek termen in het Termennetwerk rond een thema, kies wat erbij hoort en download het als <code>skos:Collection</code> (JSON-LD).</p>
+  <nav class="nav"><a href="help.html">Help</a> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/jolietjakeblues/termenplukker" rel="noopener">Broncode</a></nav>
+</header>
+<main>
+  <section class="panel sticky" aria-label="Zoeken">
+    <h2>1 · Thema</h2>
+    <label class="f" for="theme">Onderwerp of thema</label>
+    <input id="theme" type="text" value="Kleding en Streekdracht" autocomplete="off">
+    <p class="hint">Wordt opgesplitst in zoektermen (bij “en”, komma, &amp;). Vul ze zelf aan, bijv. <em>klederdracht</em> of <em>hoofddeksels</em>.</p>
+    <div class="chips" id="seeds"></div>
+    <div class="row" style="margin-top:8px">
+      <input id="addSeed" type="text" placeholder="zoekterm toevoegen…" autocomplete="off">
+      <button id="addSeedBtn" type="button">+</button>
+    </div>
+
+    <label class="f" for="limit">Hoeveel termen maximaal?</label>
+    <input id="limit" type="number" min="10" max="2000" step="10" value="200">
+    <p class="hint">Na ontdubbelen. Ook bij het uitklappen van de hiërarchie geldt dit als plafond.</p>
+
+    <label class="f" for="depth">Automatisch uitklappen</label>
+    <select id="depth" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit">
+      <option value="0">Niet: alleen zoekresultaten</option>
+      <option value="1" selected>1 niveau onder de kerntermen (aanbevolen)</option>
+      <option value="2">2 niveaus onder de kerntermen</option>
+    </select>
+    <p class="hint">Kerntermen = termen waarvan het label precies je zoekterm is. Dieper gaan kan daarna per tak.</p>
+
+    <label class="f">Bronnen</label>
+    <div class="sources" id="sources"><span class="hint">Bronnen laden…</span></div>
+
+    <div style="margin-top:14px"><button class="primary" id="go" type="button">Zoek in het Termennetwerk</button></div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+    <div id="warnings"></div>
+  </section>
+
+  <section class="panel" aria-label="Resultaten">
+    <h2>2 · Kies termen</h2>
+    <div class="toolbar">
+      <input id="filter" type="text" placeholder="filter op label…" autocomplete="off">
+      <button type="button" class="link" id="allOn">alles aan</button>
+      <button type="button" class="link" id="allOff">alles uit</button>
+      <span class="counter" id="counter"></span>
+    </div>
+    <div id="results">
+      <div class="empty how">
+        <strong>Zo werkt het</strong>
+        <ol style="text-align:left;max-width:560px;margin:10px auto">
+          <li>Het thema wordt gesplitst in zoektermen. Elke zoekterm wordt in de gekozen bronnen opgezocht.</li>
+          <li>Termen die precies je zoekterm zijn (de <em>kerntermen</em>) worden automatisch één niveau uitgeklapt: hun smallere termen (<code>skos:narrower</code>) komen erbij.</li>
+          <li>Per term kun je verder: <strong>▸ +N</strong> klapt één niveau uit, <strong>hele tak</strong> alles eronder (tot het maximum).</li>
+          <li>Dezelfde term in CHT én AAT blijven allebei staan en worden gekoppeld met <code>skos:exactMatch</code>. Klik een koppeling aan of uit.</li>
+          <li>Zoektreffers waarin je woord alleen ergens middenin staat, komen onder “minder zeker” en staan standaard uit.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel sticky" id="export" aria-label="Export">
+    <h2>3 · Collectie</h2>
+    <label class="f" for="cname">Naam</label>
+    <input id="cname" type="text" autocomplete="off">
+    <label class="f" for="cslug">Opdrachtnaam in de URI</label>
+    <input id="cslug" type="text" autocomplete="off">
+    <div class="uri" id="curi"></div>
+    <div style="margin-top:12px">
+      <div class="stat"><span>Geselecteerde termen</span><strong id="nSel">0</strong></div>
+      <div class="stat"><span>exactMatch-koppelingen</span><strong id="nMatch">0</strong></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="primary" id="download" type="button" disabled>Download JSON-LD</button>
+      <button id="copy" type="button" disabled>Kopieer</button>
+    </div>
+    <details style="margin-top:12px"><summary style="cursor:pointer;color:var(--muted)">Voorbeeld van de JSON-LD</summary><pre id="preview"></pre></details>
+  </section>
+</main>
+
+<footer>Termen komen live uit het <a href="https://termennetwerk.netwerkdigitaalerfgoed.nl/" rel="noopener">Termennetwerk</a> van het Netwerk Digitaal Erfgoed. Deze pagina bewaart niets en gebruikt geen cookies. <a href="privacy.html">Privacy</a> · <a href="help.html">Help</a></footer>
+<script>
+const API = 'https://termennetwerk-api.netwerkdigitaalerfgoed.nl/graphql';
+const BASE = 'https://collectienederland.nl/';
+const DEFAULT_SOURCES = ['https://data.cultureelerfgoed.nl/term/id/cht', 'http://vocab.getty.edu/aat'];
+const SUGGESTED = DEFAULT_SOURCES.concat(['https://data.colonialcollections.nl/nmvw/thesaurus', 'https://digitaalerfgoed.poolparty.biz/agrarischethesaurus', 'https://www.wikidata.org#entities-all']);
+const TERM_FIELDS = 'uri prefLabel altLabel scopeNote broader { uri prefLabel } narrower { uri prefLabel } exactMatch { uri }';
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+const state = {
+  seeds: [],
+  sources: [],          // {uri, name, short}
+  terms: new Map(),     // uri -> term
+  groups: [],           // seed strings in search order
+  matches: new Map(),   // "a|b" -> {a, b, strong, accepted, why}
+  open: new Set(),      // uris with detail shown
+  busy: false,
+  slugTouched: false,
+};
+
+// ---------- helpers ----------
+const norm = s => String(s).toLowerCase().replace(/\([^)]*\)/g, ' ').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim();
+const slugify = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+function splitTheme(t) {
+  return t.split(/\s*(?:,|;|&|\/|\+|\ben\b|\bof\b)\s*/i).map(s => s.trim()).filter(Boolean);
+}
+function sourceInfo(uri) {
+  const s = state.sources.find(x => x.uri === uri);
+  return s || { uri, name: uri, short: uri.replace(/^https?:\/\/(www\.)?/, '').split(/[/#]/)[0] };
+}
+function badgeClass(uri) {
+  if (uri.includes('/term/id/cht')) return 'b-cht';
+  if (uri.includes('vocab.getty.edu/aat')) return 'b-aat';
+  return 'b-oth';
+}
+function labelsOf(t) { return [t.prefLabel, ...t.altLabels].map(norm).filter(Boolean); }
+
+function tierFor(t, seed) {
+  const s = norm(seed);
+  const variants = new Set([s, s + 'en', s + 's', s.replace(/(en|s)$/, '')]);
+  const labels = labelsOf(t);
+  if (labels.some(l => variants.has(l))) return 'A';
+  // Hier tellen kwalificaties tussen haakjes wél mee: "jakken (kleding)" hoort erbij.
+  const words = [t.prefLabel, ...t.altLabels].flatMap(l => String(l).toLowerCase().split(/[\s\-()&,]+/)).filter(Boolean);
+  const stem = s.replace(/(en|s)$/, '');
+  // Een voorvoegsel als be-/ver-/ont- maakt er een ander woord van: bekleding is geen kleding.
+  const other = w => ['be', 'ver', 'ont'].some(p => w.endsWith(p + stem));
+  if (words.some(w => w.startsWith(stem) || ((w.endsWith(s) || w.endsWith(stem)) && !other(w)))) return 'B';
+  return 'C';
+}
+
+async function gql(query) {
+  const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
+  if (!res.ok) throw new Error('Termennetwerk antwoordde met HTTP ' + res.status);
+  const json = await res.json();
+  if (json.errors && !json.data) throw new Error(json.errors.map(e => e.message).join('; '));
+  return json.data;
+}
+const q = s => JSON.stringify(s);
+
+function makeTerm(raw, sourceUri, origin) {
+  return {
+    uri: raw.uri,
+    source: sourceUri,
+    prefLabel: (raw.prefLabel && raw.prefLabel[0]) || raw.uri,
+    altLabels: [...new Set([...(raw.prefLabel || []).slice(1), ...(raw.altLabel || [])])],
+    scopeNote: (raw.scopeNote || [])[0] || '',
+    broader: raw.broader || [],
+    narrower: (raw.narrower || []).map(n => n.uri),
+    apiMatches: (raw.exactMatch || []).map(m => m.uri),
+    ...origin,                 // group, tier, parent, depth
+    checked: origin.tier !== 'C',
+    loaded: false,             // narrower fetched?
+  };
+}
+
+// ---------- sources ----------
+async function loadSources() {
+  try {
+    const d = await gql('{ sources { name uri alternateName genres { name } } }');
+    state.sources = d.sources.map(s => ({ uri: s.uri, name: s.name, short: s.alternateName || s.name }));
+  } catch (e) {
+    state.sources = [
+      { uri: DEFAULT_SOURCES[0], name: 'Cultuurhistorische Thesaurus', short: 'CHT' },
+      { uri: DEFAULT_SOURCES[1], name: 'Art & Architecture Thesaurus', short: 'AAT' },
+    ];
+  }
+  const suggested = SUGGESTED.map(u => state.sources.find(s => s.uri === u)).filter(Boolean);
+  const rest = state.sources.filter(s => !SUGGESTED.includes(s.uri)).sort((a, b) => a.name.localeCompare(b.name, 'nl'));
+  const row = s => `<label><input type="checkbox" value="${esc(s.uri)}" ${DEFAULT_SOURCES.includes(s.uri) ? 'checked' : ''}> <span>${esc(s.name)}</span></label>`;
+  $('sources').innerHTML = suggested.map(row).join('') +
+    `<details><summary class="hint" style="cursor:pointer">alle ${rest.length} andere bronnen</summary>${rest.map(row).join('')}</details>`;
+}
+const chosenSources = () => [...$('sources').querySelectorAll('input:checked')].map(i => i.value);
+
+// ---------- seeds ----------
+function renderSeeds() {
+  $('seeds').innerHTML = state.seeds.map((s, i) => `<span class="chip">${esc(s)}<button type="button" aria-label="verwijder ${esc(s)}" data-i="${i}">×</button></span>`).join('');
+}
+function syncSeedsFromTheme() {
+  state.seeds = [...new Set(splitTheme($('theme').value).map(s => s.toLowerCase()))];
+  renderSeeds();
+  $('cname').value = $('theme').value.trim();
+  if (!state.slugTouched) $('cslug').value = slugify($('theme').value);
+  renderExport();
+}
+function addSeed() {
+  const v = $('addSeed').value.trim().toLowerCase();
+  if (v && !state.seeds.includes(v)) state.seeds.push(v);
+  $('addSeed').value = '';
+  renderSeeds();
+}
+
+// ---------- search & expand ----------
+const limit = () => Math.max(1, parseInt($('limit').value, 10) || 200);
+function setStatus(html, spin) { $('status').innerHTML = (spin ? '<span class="spinner"></span>' : '') + html; }
+function warn(msg) { $('warnings').insertAdjacentHTML('beforeend', `<div class="warn">${esc(msg)}</div>`); }
+
+async function search() {
+  const sources = chosenSources();
+  if (!state.seeds.length) { setStatus('Geef minstens één zoekterm.'); return; }
+  if (!sources.length) { setStatus('Kies minstens één bron.'); return; }
+  state.busy = true; updateButtons();
+  state.terms.clear(); state.matches.clear(); state.open.clear(); state.groups = [];
+  $('warnings').innerHTML = '';
+  const max = limit();
+  try {
+    // 1. zoektermen, alle tegelijk
+    setStatus(`Zoeken naar ${state.seeds.length} zoekterm(en) in ${sources.length} bron(nen)…`, true);
+    const results = await Promise.all(state.seeds.map(seed =>
+      gql(`{ terms(sources: ${q(sources)}, query: ${q(seed)}, limit: 100, timeoutMs: 20000) { source { uri name } result { __typename ... on Terms { terms { ${TERM_FIELDS} } } ... on Error { message } } } }`)
+        .then(d => ({ seed, d })).catch(e => ({ seed, err: e }))));
+    const hits = [];
+    for (const { seed, d, err } of results) {
+      state.groups.push(seed);
+      if (err) { warn(`“${seed}”: ${err.message}`); continue; }
+      for (const r of d.terms) {
+        if (r.result.__typename !== 'Terms') { warn(`${r.source.name} gaf geen resultaat voor “${seed}”${r.result.message ? ': ' + r.result.message : ''}.`); continue; }
+        for (const raw of r.result.terms) {
+          const t = makeTerm(raw, r.source.uri, { group: seed, parent: null, depth: 0 });
+          t.tier = tierFor(t, seed); t.checked = t.tier !== 'C';
+          hits.push(t);
+        }
+      }
+    }
+    // ontdubbelen: beste tier wint
+    const rank = { A: 0, B: 1, C: 2 };
+    hits.sort((a, b) => rank[a.tier] - rank[b.tier]);
+    let dropped = 0;
+    for (const t of hits) {
+      if (state.terms.has(t.uri)) continue;
+      if (state.terms.size >= max) { dropped++; continue; }
+      state.terms.set(t.uri, t);
+    }
+    if (dropped) warn(`Maximum van ${max} bereikt: ${dropped} minder relevante zoektreffers weggelaten.`);
+    render();
+
+    // 2. kerntermen automatisch uitklappen
+    const depth = parseInt($('depth').value, 10);
+    let frontier = [...state.terms.values()].filter(t => t.tier === 'A');
+    for (let lvl = 0; lvl < depth && frontier.length; lvl++) {
+      setStatus(`Smallere termen ophalen (niveau ${lvl + 1})…`, true);
+      frontier = await expand(frontier);
+      render();
+    }
+    computeMatches();
+    render();
+    setStatus(`${state.terms.size} termen gevonden.` + (state.terms.size >= max ? ' Maximum bereikt.' : ''));
+  } catch (e) {
+    setStatus(''); warn('Zoeken mislukt: ' + e.message);
+  } finally {
+    state.busy = false; updateButtons();
+  }
+}
+
+// Haalt de narrower-termen van `parents` op; geeft de nieuw toegevoegde termen terug.
+async function expand(parents) {
+  const max = limit();
+  const wanted = [];
+  for (const p of parents) {
+    p.loaded = true;
+    for (const u of p.narrower) if (!state.terms.has(u) && !wanted.some(w => w.u === u)) wanted.push({ u, p });
+  }
+  // Om en om per zoekterm, zodat één brede zoekterm niet het hele maximum opsoupeert.
+  const perGroup = new Map();
+  for (const w of wanted) (perGroup.get(w.p.group) || perGroup.set(w.p.group, []).get(w.p.group)).push(w);
+  const lists = [...perGroup.values()];
+  wanted.length = 0;
+  for (let i = 0; lists.some(l => i < l.length); i++) for (const l of lists) if (i < l.length) wanted.push(l[i]);
+  const room = max - state.terms.size;
+  if (room <= 0) { if (wanted.length) warn(`Maximum van ${max} bereikt; niet alles is uitgeklapt.`); return []; }
+  if (wanted.length > room) warn(`Maximum van ${max} bereikt: ${wanted.length - room} smallere termen niet opgehaald.`);
+  const take = wanted.slice(0, room);
+  const added = [];
+  for (let i = 0; i < take.length; i += 40) {
+    const batch = take.slice(i, i + 40);
+    const d = await gql(`{ lookup(uris: ${q(batch.map(b => b.u))}, timeoutMs: 20000) { uri source { ... on Source { uri } } result { __typename ... on Term { ${TERM_FIELDS} } } } }`);
+    for (const r of d.lookup) {
+      if (r.result.__typename !== 'Term' || state.terms.has(r.uri)) continue;
+      const p = batch.find(b => b.u === r.uri).p;
+      const t = makeTerm(r.result, (r.source && r.source.uri) || p.source, { group: p.group, parent: p.uri, depth: p.depth + 1, tier: 'N' });
+      t.checked = p.checked;
+      state.terms.set(t.uri, t); added.push(t);
+    }
+  }
+  return added;
+}
+
+async function expandOne(uri, whole) {
+  const t = state.terms.get(uri); if (!t || state.busy) return;
+  state.busy = true; updateButtons();
+  try {
+    let frontier = [t], lvl = 0;
+    do {
+      setStatus(`“${esc(t.prefLabel)}” uitklappen${whole ? ` (niveau ${++lvl})` : ''}…`, true);
+      frontier = await expand(frontier);
+      render();
+    } while (whole && frontier.length && state.terms.size < limit());
+    computeMatches();
+    setStatus(`${state.terms.size} termen.` + (state.terms.size >= limit() ? ' Maximum bereikt — verhoog het om verder te gaan.' : ''));
+  } catch (e) { warn('Uitklappen mislukt: ' + e.message); setStatus(''); }
+  finally { state.busy = false; updateButtons(); render(); }
+}
+
+// ---------- exactMatch tussen bronnen ----------
+function computeMatches() {
+  const byLabel = new Map();
+  for (const t of state.terms.values()) for (const l of new Set(labelsOf(t))) {
+    if (!byLabel.has(l)) byLabel.set(l, []);
+    byLabel.get(l).push(t);
+  }
+  const add = (a, b, strong, why) => {
+    if (a.source === b.source || a.uri === b.uri) return;
+    const [x, y] = a.uri < b.uri ? [a, b] : [b, a];
+    const key = x.uri + '|' + y.uri;
+    const old = state.matches.get(key);
+    if (old) { if (strong && !old.strong) { old.strong = true; old.why = why; if (!old.touched) old.accepted = true; } return; }
+    state.matches.set(key, { a: x.uri, b: y.uri, strong, accepted: strong, why, touched: false });
+  };
+  for (const t of state.terms.values()) {
+    const pref = norm(t.prefLabel);
+    for (const o of byLabel.get(pref) || []) {
+      const strong = norm(o.prefLabel) === pref || o.altLabels.map(norm).includes(pref);
+      add(t, o, strong, strong ? 'zelfde (voorkeurs)label' : 'gedeeld label');
+    }
+    for (const l of t.altLabels.map(norm)) for (const o of byLabel.get(l) || []) add(t, o, false, 'gedeeld alternatief label');
+    for (const u of t.apiMatches) if (state.terms.has(u)) add(t, state.terms.get(u), true, 'exactMatch in de bron');
+  }
+}
+function matchesOf(uri) {
+  return [...state.matches.values()].filter(m => m.a === uri || m.b === uri).map(m => ({ m, other: m.a === uri ? m.b : m.a }));
+}
+
+// ---------- render ----------
+function render() {
+  const f = norm($('filter').value);
+  if (!state.terms.size) {
+    if (state.groups.length) $('results').innerHTML = '<div class="empty">Niets gevonden. Probeer een andere of enkelvoudige zoekterm.</div>';
+    renderExport(); return;
+  }
+  const children = new Map();
+  for (const t of state.terms.values()) if (t.parent) {
+    if (!children.has(t.parent)) children.set(t.parent, []);
+    children.get(t.parent).push(t);
+  }
+  const visible = new Map();
+  const isVis = t => {
+    if (visible.has(t.uri)) return visible.get(t.uri);
+    const v = !f || labelsOf(t).some(l => l.includes(f)) || (children.get(t.uri) || []).some(isVis);
+    visible.set(t.uri, v); return v;
+  };
+  const sortT = (a, b) => a.prefLabel.localeCompare(b.prefLabel, 'nl');
+  const node = t => {
+    if (!isVis(t)) return '';
+    const kids = (children.get(t.uri) || []).sort(sortT);
+    const src = sourceInfo(t.source);
+    const pending = t.narrower.filter(u => !state.terms.has(u)).length;
+    const ms = matchesOf(t.uri);
+    const open = state.open.has(t.uri);
+    return `<li><div class="term ${t.checked ? '' : 'off'}">
+      <input type="checkbox" data-act="check" data-uri="${esc(t.uri)}" ${t.checked ? 'checked' : ''} aria-label="${esc(t.prefLabel)} opnemen">
+      <div class="body">
+        <span class="lbl" data-act="info" data-uri="${esc(t.uri)}" title="details tonen">${esc(t.prefLabel)}</span><span class="badge ${badgeClass(t.source)}" title="${esc(src.name)}">${esc(src.short)}</span>
+        <span class="acts">${pending ? `<button type="button" class="link" data-act="exp" data-uri="${esc(t.uri)}" ${state.busy ? 'disabled' : ''}>▸ +${pending}</button><button type="button" class="link" data-act="all" data-uri="${esc(t.uri)}" ${state.busy ? 'disabled' : ''}>hele tak</button>` : ''}${kids.length ? `<button type="button" class="link" data-act="kids" data-uri="${esc(t.uri)}">${kids.every(k => k.checked) ? 'tak uit' : 'tak aan'}</button>` : ''}</span>
+        ${t.altLabels.length ? `<div class="alt">${esc(t.altLabels.slice(0, 6).join(' · '))}${t.altLabels.length > 6 ? ' …' : ''}</div>` : ''}
+        ${ms.length ? `<div>${ms.map(({ m, other }) => { const o = state.terms.get(other); return `<span class="match ${m.accepted ? '' : 'rej'}" title="${esc(m.why)}">≡ ${esc(sourceInfo(o.source).short)}: ${esc(o.prefLabel)}<button type="button" data-act="match" data-key="${esc(m.a + '|' + m.b)}" aria-label="${m.accepted ? 'koppeling verwijderen' : 'koppeling maken'}">${m.accepted ? '×' : '+'}</button></span>`; }).join('')}</div>` : ''}
+        ${open ? `<div class="detail">${t.scopeNote ? esc(t.scopeNote) + '<br>' : ''}${t.broader.length ? 'Breder: ' + esc(t.broader.map(b => (b.prefLabel || [])[0] || b.uri).join(', ')) + '<br>' : ''}<a href="${esc(t.uri)}" target="_blank" rel="noopener">${esc(t.uri)}</a></div>` : ''}
+      </div></div>
+      ${kids.length ? `<ul class="tree">${kids.map(node).join('')}</ul>` : ''}</li>`;
+  };
+  let html = '';
+  for (const g of state.groups) {
+    const roots = [...state.terms.values()].filter(t => t.group === g && !t.parent);
+    const core = roots.filter(t => t.tier !== 'C').sort((a, b) => (a.tier > b.tier) - (a.tier < b.tier) || sortT(a, b));
+    const weak = roots.filter(t => t.tier === 'C').sort(sortT);
+    const count = [...state.terms.values()].filter(t => t.group === g).length;
+    const coreHtml = core.map(node).join(''), weakHtml = weak.map(node).join('');
+    if (!coreHtml && !weakHtml) continue;
+    html += `<div class="group"><h3>${esc(g)} <small>${count} termen</small></h3>
+      <ul class="tree">${coreHtml || '<li class="hint" style="padding:4px 6px">Geen directe treffers.</li>'}</ul>
+      ${weakHtml ? `<details class="weak" ${f ? 'open' : ''}><summary>Minder zeker (${weak.length}): zoekwoord staat er alleen ergens in — standaard uit</summary><ul class="tree">${weakHtml}</ul></details>` : ''}
+    </div>`;
+  }
+  $('results').innerHTML = html || '<div class="empty">Geen termen voor dit filter.</div>';
+  renderExport();
+}
+
+// ---------- export ----------
+function collectionUri() { return BASE + (slugify($('cslug').value) || 'collectie'); }
+function buildJsonLd() {
+  const sel = [...state.terms.values()].filter(t => t.checked);
+  const inSel = new Set(sel.map(t => t.uri));
+  const links = new Map();
+  for (const m of state.matches.values()) if (m.accepted && inSel.has(m.a) && inSel.has(m.b)) {
+    (links.get(m.a) || links.set(m.a, []).get(m.a)).push(m.b);
+    (links.get(m.b) || links.set(m.b, []).get(m.b)).push(m.a);
+  }
+  const name = $('cname').value.trim() || 'Collectie';
+  const coll = {
+    '@id': collectionUri(),
+    '@type': 'skos:Collection',
+    'skos:prefLabel': { '@value': name, '@language': 'nl' },
+    'dct:created': { '@value': new Date().toISOString().slice(0, 10), '@type': 'xsd:date' },
+    'dct:source': { '@id': 'https://termennetwerk.netwerkdigitaalerfgoed.nl/' },
+    'skos:member': sel.map(t => ({ '@id': t.uri })),
+  };
+  const concepts = sel.map(t => {
+    const c = { '@id': t.uri, '@type': 'skos:Concept', 'skos:prefLabel': { '@value': t.prefLabel, '@language': 'nl' } };
+    if (t.altLabels.length) c['skos:altLabel'] = t.altLabels;
+    c['dct:source'] = { '@id': t.source };
+    const l = links.get(t.uri);
+    if (l) c['skos:exactMatch'] = [...new Set(l)].map(u => ({ '@id': u }));
+    return c;
+  });
+  return {
+    '@context': { skos: 'http://www.w3.org/2004/02/skos/core#', dct: 'http://purl.org/dc/terms/', xsd: 'http://www.w3.org/2001/XMLSchema#' },
+    '@graph': [coll, ...concepts],
+    _stats: { n: sel.length, m: [...links.values()].reduce((s, a) => s + a.length, 0) / 2 },
+  };
+}
+function renderExport() {
+  $('curi').textContent = collectionUri();
+  const doc = buildJsonLd(); const { n, m } = doc._stats; delete doc._stats;
+  $('nSel').textContent = n; $('nMatch').textContent = m;
+  const txt = JSON.stringify(doc, null, 2);
+  $('preview').textContent = txt.length > 6000 ? txt.slice(0, 6000) + '\n…' : txt;
+  updateButtons();
+  return txt;
+}
+function updateButtons() {
+  const n = [...state.terms.values()].filter(t => t.checked).length;
+  $('download').disabled = !n; $('copy').disabled = !n; $('go').disabled = state.busy;
+  $('counter').textContent = state.terms.size ? `${n} van ${state.terms.size} geselecteerd · max ${limit()}` : '';
+}
+
+// ---------- events ----------
+$('theme').addEventListener('input', syncSeedsFromTheme);
+$('theme').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+$('seeds').addEventListener('click', e => { const i = e.target.dataset.i; if (i !== undefined) { state.seeds.splice(+i, 1); renderSeeds(); } });
+$('addSeedBtn').addEventListener('click', addSeed);
+$('addSeed').addEventListener('keydown', e => { if (e.key === 'Enter') addSeed(); });
+$('go').addEventListener('click', search);
+$('filter').addEventListener('input', render);
+$('cname').addEventListener('input', renderExport);
+$('cslug').addEventListener('input', () => { state.slugTouched = true; renderExport(); });
+$('limit').addEventListener('input', updateButtons);
+$('allOn').addEventListener('click', () => { state.terms.forEach(t => t.checked = true); render(); });
+$('allOff').addEventListener('click', () => { state.terms.forEach(t => t.checked = false); render(); });
+$('results').addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const t = state.terms.get(el.dataset.uri);
+  switch (el.dataset.act) {
+    case 'check': t.checked = el.checked; break;
+    case 'info': state.open.has(t.uri) ? state.open.delete(t.uri) : state.open.add(t.uri); break;
+    case 'exp': return expandOne(t.uri, false);
+    case 'all': return expandOne(t.uri, true);
+    case 'kids': {
+      const on = !descendants(t.uri).every(k => k.checked);
+      descendants(t.uri).forEach(k => k.checked = on); if (on) t.checked = true; break;
+    }
+    case 'match': { const m = state.matches.get(el.dataset.key); m.accepted = !m.accepted; m.touched = true; break; }
+  }
+  render();
+});
+function descendants(uri) {
+  const out = [];
+  for (const t of state.terms.values()) if (t.parent === uri) out.push(t, ...descendants(t.uri));
+  return out;
+}
+$('download').addEventListener('click', () => {
+  const blob = new Blob([renderExport()], { type: 'application/ld+json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = (slugify($('cslug').value) || 'collectie') + '.jsonld';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+$('copy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(renderExport()); $('copy').textContent = 'Gekopieerd ✓'; }
+  catch { $('copy').textContent = 'Lukt niet'; }
+  setTimeout(() => $('copy').textContent = 'Kopieer', 1500);
+});
+
+syncSeedsFromTheme();
+loadSources();
+</script>
+</body>
+</html>

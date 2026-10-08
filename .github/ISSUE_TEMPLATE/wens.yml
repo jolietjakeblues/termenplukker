@@ -1,0 +1,25 @@
+name: Wens of idee
+description: Een verbetering of nieuwe functie voorstellen.
+title: "[wens] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Issues zijn **openbaar**: zet er geen persoonsgegevens in.
+  - type: textarea
+    id: probleem
+    attributes:
+      label: Wat wil je kunnen?
+      description: Beschrijf wat je probeert te doen en waar je nu tegenaan loopt.
+    validations:
+      required: true
+  - type: textarea
+    id: voorstel
+    attributes:
+      label: Hoe zou het kunnen werken? (optioneel)
+  - type: input
+    id: voorbeeld
+    attributes:
+      label: Voorbeeldthema (optioneel)
+      placeholder: "Molens en Waterbeheer"

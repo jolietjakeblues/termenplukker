@@ -1,0 +1,40 @@
+name: Er gaat iets mis
+description: De tool geeft een fout, vindt iets niet of maakt een verkeerd bestand.
+title: "[fout] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bedankt voor je melding. Issues zijn **openbaar**: zet er geen namen, e-mailadressen of andere persoonsgegevens in.
+  - type: input
+    id: thema
+    attributes:
+      label: Thema en zoektermen
+      description: Wat vulde je in?
+      placeholder: "Kleding en Streekdracht → kleding, streekdracht"
+    validations:
+      required: true
+  - type: input
+    id: instellingen
+    attributes:
+      label: Instellingen
+      description: Maximum, uitklapdiepte en gekozen bronnen.
+      placeholder: "max 200, 1 niveau, CHT + AAT"
+  - type: textarea
+    id: wat
+    attributes:
+      label: Wat gebeurde er?
+      description: Wat zag je, en wat had je verwacht? Plak eventueel de melding die links verscheen.
+    validations:
+      required: true
+  - type: textarea
+    id: termen
+    attributes:
+      label: Betrokken termen (optioneel)
+      description: Labels of URI's van de termen waar het om gaat.
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      placeholder: "Edge 141 op Windows 11"

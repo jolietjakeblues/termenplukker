@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Help
+    url: https://termenplukker.jolietjakeblues64.workers.dev/help.html
+    about: Uitleg over zoeken, uitklappen, koppelen en het exportbestand.
+  - name: Termennetwerk
+    url: https://termennetwerk.netwerkdigitaalerfgoed.nl/
+    about: Vragen over het Termennetwerk zelf of over de aangesloten bronnen.

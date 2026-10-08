@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Termenplukker help</title>
+<link rel="stylesheet" href="page.css">
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="./">← terug naar de Termenplukker</a>
+<h1>Help</h1>
+<p class="lead">De Termenplukker maakt van een thema een lijst termen uit het Termennetwerk. Die lijst download je als <code>skos:Collection</code> in JSON-LD.</p>
+
+<h2>In het kort</h2>
+<ol>
+  <li><strong>Thema invullen</strong>, bijvoorbeeld <em>Kleding en Streekdracht</em>. Het thema wordt gesplitst in zoektermen (<em>kleding</em>, <em>streekdracht</em>). Voeg zelf zoektermen toe of haal ze weg.</li>
+  <li><strong>Maximum kiezen</strong>: het aantal termen dat de lijst na ontdubbelen maximaal mag bevatten.</li>
+  <li><strong>Bronnen kiezen</strong>: standaard de Cultuurhistorische Thesaurus (CHT) en de Art &amp; Architecture Thesaurus (AAT). De andere bronnen in het Termennetwerk kun je erbij aanzetten.</li>
+  <li><strong>Zoeken</strong>, daarna in het midden aanvinken wat erbij hoort.</li>
+  <li>Rechts de <strong>naam en opdrachtnaam</strong> van de collectie controleren en <strong>Download JSON-LD</strong> kiezen.</li>
+</ol>
+
+<h2>Zoekwoorden kiezen</h2>
+<p>Het Termennetwerk zoekt op de labels van termen, niet op betekenis. Een woord als <em>kleding</em> vindt dus ook <em>bekleding</em> of <em>wandbekleding</em>. Daarom deelt de tool de treffers in:</p>
+<table>
+  <tr><th>Soort</th><th>Wat</th><th>Standaard</th></tr>
+  <tr><td>Kernterm</td><td>Het label of een alternatief label is precies je zoekterm (enkelvoud of meervoud).</td><td>aan, en automatisch uitgeklapt</td></tr>
+  <tr><td>Samenstelling</td><td>Het zoekwoord staat aan het begin of eind van een woord, zoals <em>bruidskleding</em>.</td><td>aan</td></tr>
+  <tr><td>Minder zeker</td><td>Het zoekwoord komt er alleen ergens middenin voor, of de bron vond het om een andere reden.</td><td>uit, ingeklapt onder “minder zeker”</td></tr>
+</table>
+<p>Tip: gebruik enkelvoudige, concrete woorden. <em>Streekdracht</em> werkt beter dan <em>traditionele kleding in Nederland</em>.</p>
+
+<h2>Hoe diep gaat de tool?</h2>
+<p>Thesauri zijn hiërarchisch: onder <em>klederdrachten</em> hangen bijvoorbeeld <em>Scheveningse dracht</em> en <em>Fries kostuum</em>. Deze smallere termen (<code>skos:narrower</code>) maken een thema compleet. Een hele boom kan wel honderden termen bevatten, en niet alles daarin past bij je thema.</p>
+<p>Daarom werkt de tool zo:</p>
+<ul>
+  <li><strong>Automatisch</strong> klapt de tool alleen de <em>kerntermen</em> één niveau uit. Dat is in te stellen op 0, 1 of 2 niveaus.</li>
+  <li><strong>▸ +N</strong> bij een term haalt één niveau dieper op.</li>
+  <li><strong>hele tak</strong> haalt alles onder die term op, tot het maximum bereikt is.</li>
+  <li><strong>tak aan / tak uit</strong> zet alle termen onder een term in één keer aan of uit.</li>
+</ul>
+<p>Nieuwe smallere termen krijgen dezelfde aan/uit-stand als hun bovenliggende term.</p>
+
+<h2>Dubbele termen en <code>skos:exactMatch</code></h2>
+<p>Dezelfde URI komt maar één keer in de lijst, ook als je hem via meerdere zoektermen vindt. Staat hetzelfde begrip in twee bronnen, bijvoorbeeld <em>klederdrachten</em> in de CHT en <em>streekdracht</em> in de AAT, dan blijven <strong>beide</strong> staan. Ze worden aan elkaar gekoppeld met <code>skos:exactMatch</code>.</p>
+<p>Zo'n koppeling staat als geel label bij de term (<em>≡ AAT: streekdracht</em>):</p>
+<ul>
+  <li><strong>Standaard aan</strong> als het voorkeurslabel van de ene term gelijk is aan een label van de andere, of als de bron de koppeling zelf al legt.</li>
+  <li><strong>Standaard uit</strong> (doorgestreept) als de termen alleen een alternatief label delen. Dat is vaak een ander begrip.</li>
+  <li>Met <strong>×</strong> haal je een koppeling weg, met <strong>+</strong> zet je hem aan.</li>
+</ul>
+<p>Controleer de koppelingen altijd. De tool vergelijkt alleen labels en weet niet wat iets betekent. De AAT kent bijvoorbeeld twee verschillende begrippen die allebei <em>streekdracht</em> heten.</p>
+
+<h2>Het bestand</h2>
+<p>De collectie krijgt de URI <code>https://collectienederland.nl/&lt;opdrachtnaam&gt;</code>. Het bestand bevat de collectie met al haar leden, en per term het voorkeurslabel, de alternatieve labels, de bron en de gekozen <code>exactMatch</code>-koppelingen. Alleen aangevinkte termen komen erin.</p>
+<pre>{
+  "@context": { "skos": "http://www.w3.org/2004/02/skos/core#", "dct": "http://purl.org/dc/terms/", ... },
+  "@graph": [
+    { "@id": "https://collectienederland.nl/kleding-en-streekdracht",
+      "@type": "skos:Collection",
+      "skos:prefLabel": { "@value": "Kleding en Streekdracht", "@language": "nl" },
+      "skos:member": [ { "@id": "https://data.cultureelerfgoed.nl/term/id/cht/6312a407-…" }, … ] },
+    { "@id": "https://data.cultureelerfgoed.nl/term/id/cht/6312a407-…",
+      "@type": "skos:Concept",
+      "skos:prefLabel": { "@value": "klederdrachten", "@language": "nl" },
+      "skos:altLabel": [ "klederdracht", "streekdracht", … ],
+      "dct:source": { "@id": "https://data.cultureelerfgoed.nl/term/id/cht" },
+      "skos:exactMatch": [ { "@id": "http://vocab.getty.edu/aat/300411367" } ] }
+  ]
+}</pre>
+<p>Alternatieve labels krijgen geen taalcode, want het Termennetwerk geeft die niet mee. De AAT levert er soms ook Engelse bij.</p>
+
+<h2>Bekende beperkingen</h2>
+<ul>
+  <li>Per zoekterm en per bron levert het Termennetwerk hoogstens 100 treffers.</li>
+  <li>Je selectie wordt nergens bewaard. Herlaad je de pagina, dan begin je opnieuw. Download dus op tijd.</li>
+  <li>Geeft een bron geen antwoord, dan zie je links een melding. De andere bronnen werken gewoon door.</li>
+</ul>
+
+<footer><a href="privacy.html">Privacy</a> · <a href="https://github.com/jolietjakeblues/termenplukker" rel="noopener">Broncode en meldingen</a></footer>
+</div>
+</body>
+</html>
