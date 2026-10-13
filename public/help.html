@@ -70,11 +70,11 @@
 <p>Controleer de koppelingen altijd. De tool vergelijkt alleen labels en weet niet wat iets betekent. De AAT kent bijvoorbeeld twee verschillende begrippen die allebei <em>streekdracht</em> heten.</p>
 
 <h2>Het bestand</h2>
-<p>De collectie krijgt de URI <code>https://collectienederland.nl/&lt;opdrachtnaam&gt;</code>. Het bestand bevat de collectie met al haar leden, en per term het voorkeurslabel, de alternatieve labels, de bron en de gekozen <code>exactMatch</code>-koppelingen. Alleen aangevinkte termen komen erin.</p>
+<p>De collectie krijgt de URI <code>https://data.collectienederland.nl/collection/&lt;opdrachtnaam&gt;</code>. Het bestand bevat de collectie met al haar leden, en per term het voorkeurslabel, de alternatieve labels, de bron en de gekozen <code>exactMatch</code>-koppelingen. Alleen aangevinkte termen komen erin.</p>
 <pre>{
   "@context": { "skos": "http://www.w3.org/2004/02/skos/core#", "dct": "http://purl.org/dc/terms/", ... },
   "@graph": [
-    { "@id": "https://collectienederland.nl/kleding-en-streekdracht",
+    { "@id": "https://data.collectienederland.nl/collection/kleding-en-streekdracht",
       "@type": "skos:Collection",
       "skos:prefLabel": { "@value": "Kleding en Streekdracht", "@language": "nl" },
       "skos:member": [ { "@id": "https://data.cultureelerfgoed.nl/term/id/cht/6312a407-…" }, … ] },
