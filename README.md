@@ -10,7 +10,7 @@ Een webtool om rond een thema termen te verzamelen uit het [Termennetwerk](https
 4. **Uitklappen** via `skos:narrower`. Kerntermen gaan automatisch één niveau dieper (instelbaar 0–2). Per term kan het verder: één niveau of de hele tak.
 5. **Ontdubbelen.** Elke URI komt maar één keer voor, en het opgegeven maximum geldt voor het totaal.
 6. **Koppelen.** Hetzelfde begrip in twee bronnen blijft twee keer staan, gekoppeld met `skos:exactMatch`. De tool doet voorstellen op basis van labels en van bestaande `exactMatch`-relaties in de bron. Elke koppeling is aan of uit te zetten.
-7. **Exporteren** als JSON-LD met collectie-URI `https://collectienederland.nl/<opdrachtnaam>`, met per lid het voorkeurslabel, de alternatieve labels, de bron en de gekozen koppelingen.
+7. **Exporteren** als JSON-LD met collectie-URI `https://data.collectienederland.nl/collection/<opdrachtnaam>`, met per lid het voorkeurslabel, de alternatieve labels, de bron en de gekozen koppelingen.
 
 Zie [public/help.html](public/help.html) voor de gebruikershandleiding.
 
